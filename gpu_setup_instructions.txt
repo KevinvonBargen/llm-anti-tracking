@@ -1,0 +1,36 @@
+# GPU Setup Instructions for Enhanced Performance
+
+# 1. Install PyTorch 2.2.2 with CUDA 12.1 support
+pip install --ignore-installed torch==2.2.2 --index-url https://download.pytorch.org/whl/cu121
+
+# 2. Optional: Install matching versions of torchvision and torchaudio
+pip install torchvision==0.17.2 torchaudio==2.2.2
+
+# 3. Modify 'train_model.py' as follows:
+
+# a. Set the optimizer to 'adamw_torch' to ensure compatibility
+# Replace:
+# if DEVICE == "cuda":
+#     OPTIMIZER = "adamw_apex_fused"
+# else:
+#     OPTIMIZER = "adamw_torch"
+# With:
+OPTIMIZER = "adamw_torch"
+
+# b. Adjust data loading to defer device assignment
+# Replace:
+# def __getitem__(self, idx):
+#     return {
+#         'input_ids': torch.tensor(self.encodings['input_ids'][idx]).to(DEVICE),
+#         'attention_mask': torch.tensor(self.encodings['attention_mask'][idx]).to(DEVICE),
+#         'labels': torch.tensor(self.labels[idx]).to(DEVICE)
+#     }
+# With:
+def __getitem__(self, idx):
+    return {
+        'input_ids': torch.tensor(self.encodings['input_ids'][idx]),
+        'attention_mask': torch.tensor(self.encodings['attention_mask'][idx]),
+        'labels': torch.tensor(self.labels[idx])
+    }
+
+# Note: The tensors will be moved to the appropriate device during the training loop.
